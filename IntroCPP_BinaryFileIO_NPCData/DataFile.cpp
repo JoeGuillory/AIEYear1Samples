@@ -86,10 +86,11 @@ void DataFile::Load(string filename)
 		infile.read(imgdata, imageSize);
 
 		Image img = LoadImageEx((Color*)imgdata, width, height);
-		char* name = new char[nameSize];
+		char* name = new char[nameSize +1];
 		int age = 0;
 				
 		infile.read((char*)name, nameSize);
+		name[nameSize] = '\0';
 		infile.read((char*)&age, ageSize);
 
 		Record* r = new Record();
