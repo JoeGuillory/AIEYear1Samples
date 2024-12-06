@@ -11,7 +11,7 @@ DataFile::~DataFile()
 {
 	Clear();
 }
-
+//Adds a new record to the file
 void DataFile::AddRecord(string imageFilename, string name, int age)
 {
 	Image i = LoadImage(imageFilename.c_str());
@@ -24,12 +24,12 @@ void DataFile::AddRecord(string imageFilename, string name, int age)
 	records.push_back(r);
 	recordCount++;
 }
-
+// Gets the index of the record
 DataFile::Record* DataFile::GetRecord(int index)
 {
 	return records[index];
 }
-
+// Saves the records to the file
 void DataFile::Save(string filename)
 {
 	ofstream outfile(filename, ios::binary);
@@ -58,7 +58,7 @@ void DataFile::Save(string filename)
 
 	outfile.close();
 }
-
+//Loads the file
 void DataFile::Load(string filename)
 {
 	Clear();
@@ -105,7 +105,7 @@ void DataFile::Load(string filename)
 
 	infile.close();
 }
-
+//Deletes everything in the array
 void DataFile::Clear()
 {
 	for (int i = 0; i < records.size(); i++)
