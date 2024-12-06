@@ -61,8 +61,8 @@ void DataFile::Save(string filename)
 //Loads the file
 void DataFile::Load(string filename)
 {
+	
 	Clear();
-
 	ifstream infile(filename, ios::binary);
 
 	recordCount = 0;
