@@ -1,5 +1,6 @@
 #include "DataFile.h"
 #include <fstream>
+
 using namespace std;
 
 DataFile::DataFile()
@@ -14,7 +15,7 @@ DataFile::~DataFile()
 //Adds a new record to the file
 void DataFile::AddRecord(string imageFilename, string name, int age)
 {
-	Image i = LoadImage(imageFilename.c_str());
+	/*Image i = LoadImage(imageFilename.c_str());
 
 	Record* r = new Record;
 	r->image = i;
@@ -22,19 +23,20 @@ void DataFile::AddRecord(string imageFilename, string name, int age)
 	r->age = age;
 
 	records.push_back(r);
-	recordCount++;
+	recordCount++;*/
 }
 // Gets the index of the record
 DataFile::Record* DataFile::GetRecord(int index)
 {
-	return records[index];
+	
+	return Load(index);
 }
 // Saves the records to the file
 void DataFile::Save(string filename)
 {
 	ofstream outfile(filename, ios::binary);
 
-	int recordCount = records.size();
+	/*int recordCount = records.size();
 	outfile.write((char*)&recordCount, sizeof(int));
 
 	for (int i = 0; i < recordCount; i++)
@@ -56,62 +58,69 @@ void DataFile::Save(string filename)
 		outfile.write((char*)&records[i]->age, ageSize);
 	}
 
-	outfile.close();
+	outfile.close();*/
 }
 //Loads the file
 void DataFile::Load(string filename)
 {
-	
-	Clear();
-	ifstream infile(filename, ios::binary);
+	filepath = filename;
+}
+DataFile::Record* DataFile::Load(int index)
+{
+	ifstream infile(filepath, ios::binary);
 
-	recordCount = 0;
-	infile.read((char*)&recordCount, sizeof(int));
+	if (infile.is_open())
+	{
+		
+		
+		infile.seekg(0, ios::beg);
+		infile.read((char*)&recordCount, sizeof(int));
+		
+		
+		for (int i = 0; i <= index; i++)
+		{
 
-	for (int i = 0; i < recordCount; i++)
-	{		
-		int nameSize = 0;
-		int ageSize = 0;
-		int width = 0, height = 0, format = 0, imageSize = 0;
+			int nameSize = 0;
+			int ageSize = 0;
+			int width = 0, height = 0, format = 0, imageSize = 0;
 
-		infile.read((char*)&width, sizeof(int));
-		infile.read((char*)&height, sizeof(int));
+			infile.read((char*)&width, sizeof(int));
+			infile.read((char*)&height, sizeof(int));
 
-		imageSize = sizeof(Color) * width * height;
+			imageSize = sizeof(Color) * width * height;
 
-		infile.read((char*)&nameSize, sizeof(int));
-		infile.read((char*)&ageSize, sizeof(int));
+			infile.read((char*)&nameSize, sizeof(int));
+			infile.read((char*)&ageSize, sizeof(int));
 
-		char* imgdata = new char[imageSize];
-		infile.read(imgdata, imageSize);
+			char* imgdata = new char[imageSize];
+			infile.read(imgdata, imageSize);
 
-		Image img = LoadImageEx((Color*)imgdata, width, height);
-		char* name = new char[nameSize +1];
-		int age = 0;
-				
-		infile.read((char*)name, nameSize);
-		name[nameSize] = '\0';
-		infile.read((char*)&age, ageSize);
+			Image img = LoadImageEx((Color*)imgdata, width, height);
+			char* name = new char[nameSize + 1];
+			int age = 0;
 
-		Record* r = new Record();
-		r->image = img;
-		r->name = string(name);
-		r->age = age;
-		records.push_back(r);
+			infile.read((char*)name, nameSize);
+			name[nameSize] = '\0';
+			infile.read((char*)&age, ageSize);
 
-		delete [] imgdata;
-		delete [] name;
+			Record* r = new Record();
+			r->image = img;
+			r->name = string(name);
+			r->age = age;
+
+
+			delete[] imgdata;
+			delete[] name;
+		
+			if(i == index)
+			return r;
+		}
 	}
-
 	infile.close();
+
 }
 //Deletes everything in the array
 void DataFile::Clear()
 {
-	for (int i = 0; i < records.size(); i++)
-	{
-		delete records[i];
-	}
-	records.clear();
-	recordCount = 0;
+	
 }

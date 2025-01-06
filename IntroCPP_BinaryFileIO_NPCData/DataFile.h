@@ -17,7 +17,7 @@ public:
 
 private:
 	int recordCount;
-	std::vector<Record*> records;	// delete this vector. Load only the required record 
+	// delete this vector. Load only the required record 
 
 
 
@@ -32,8 +32,9 @@ public:
 
 	void Save(string filename);
 	void Load(string filename);
-
+	Record* Load(int index);
 private:
+	string filepath;
 	void Clear();
 
 };
