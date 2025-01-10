@@ -15,15 +15,14 @@ DataFile::~DataFile()
 //Adds a new record to the file
 void DataFile::AddRecord(string imageFilename, string name, int age)
 {
-	/*Image i = LoadImage(imageFilename.c_str());
+	Image i = LoadImage(imageFilename.c_str());
 
 	Record* r = new Record;
 	r->image = i;
 	r->name = name;
 	r->age = age;
 
-	records.push_back(r);
-	recordCount++;*/
+	recordCount++;
 }
 // Gets the index of the record
 DataFile::Record* DataFile::GetRecord(int index)
@@ -32,33 +31,33 @@ DataFile::Record* DataFile::GetRecord(int index)
 	return Load(index);
 }
 // Saves the records to the file
-void DataFile::Save(string filename)
+void DataFile::Save(string filename,Record* record, int Length)
 {
 	ofstream outfile(filename, ios::binary);
 
-	/*int recordCount = records.size();
+	int recordCount = Length;
 	outfile.write((char*)&recordCount, sizeof(int));
 
 	for (int i = 0; i < recordCount; i++)
 	{		
-		Color* imgdata = GetImageData(records[i]->image);
+		Color* imgdata = GetImageData(record->image);
 				
-		int imageSize = sizeof(Color) * records[i]->image.width * records[i]->image.height;
-		int nameSize = records[i]->name.length();
+		int imageSize = sizeof(Color) * record->image.width * record->image.height;
+		int nameSize = record->name.length();
 		int ageSize = sizeof(int);
 
-		outfile.write((char*)&records[i]->image.width, sizeof(int));
-		outfile.write((char*)&records[i]->image.height, sizeof(int));
+		outfile.write((char*)&record->image.width, sizeof(int));
+		outfile.write((char*)&record->image.height, sizeof(int));
 		
 		outfile.write((char*)&nameSize, sizeof(int));
 		outfile.write((char*)&ageSize, sizeof(int));
 
 		outfile.write((char*)imgdata, imageSize);
-		outfile.write((char*)records[i]->name.c_str(), nameSize);
-		outfile.write((char*)&records[i]->age, ageSize);
+		outfile.write((char*)record->name.c_str(), nameSize);
+		outfile.write((char*)&record->age, ageSize);
 	}
 
-	outfile.close();*/
+	outfile.close();
 }
 //Loads the file
 void DataFile::Load(string filename)

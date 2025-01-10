@@ -17,6 +17,7 @@ public:
 
 private:
 	int recordCount;
+	Record* record;
 	// delete this vector. Load only the required record 
 
 
@@ -30,7 +31,7 @@ public:
 
 	int GetRecordCount() { return recordCount; };
 
-	void Save(string filename);
+	void Save(string filename,Record* record,int Length);
 	void Load(string filename);
 	Record* Load(int index);
 private:
