@@ -1,5 +1,6 @@
 #include "DataFile.h"
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -66,7 +67,7 @@ void DataFile::Load(string filename)
 }
 DataFile::Record* DataFile::Load(int index)
 {
-	ifstream infile(filepath, ios::binary);
+	ifstream infile(filepath, std::ios::in | ios::binary);
 
 	if (infile.is_open())
 	{
@@ -74,46 +75,67 @@ DataFile::Record* DataFile::Load(int index)
 		
 		infile.seekg(0, ios::beg);
 		infile.read((char*)&recordCount, sizeof(int));
-		
-		
-		for (int i = 0; i <= index; i++)
+		std::cout << infile.tellg() << std::endl;
+		int nameSize = 0;
+		int ageSize = 0;
+		int width = 0, height = 0, format = 0, imageSize = 0;
+		// read teh sizes of the current record
+		// seekg path the rest of record
+
+		for (int i = 0; i < index ; i++)
 		{
-
-			int nameSize = 0;
-			int ageSize = 0;
-			int width = 0, height = 0, format = 0, imageSize = 0;
-
 			infile.read((char*)&width, sizeof(int));
+			
 			infile.read((char*)&height, sizeof(int));
+			
 
 			imageSize = sizeof(Color) * width * height;
 
 			infile.read((char*)&nameSize, sizeof(int));
+			
 			infile.read((char*)&ageSize, sizeof(int));
 
-			char* imgdata = new char[imageSize];
-			infile.read(imgdata, imageSize);
+			
+			
+			infile.seekg(imageSize + nameSize + ageSize,ios::cur);
 
-			Image img = LoadImageEx((Color*)imgdata, width, height);
-			char* name = new char[nameSize + 1];
-			int age = 0;
-
-			infile.read((char*)name, nameSize);
-			name[nameSize] = '\0';
-			infile.read((char*)&age, ageSize);
-
-			Record* r = new Record();
-			r->image = img;
-			r->name = string(name);
-			r->age = age;
-
-
-			delete[] imgdata;
-			delete[] name;
-		
-			if(i == index)
-			return r;
 		}
+		infile.read((char*)&width, sizeof(int));
+		
+		infile.read((char*)&height, sizeof(int));
+		
+
+		imageSize = sizeof(Color) * width * height;
+
+		infile.read((char*)&nameSize, sizeof(int));
+		
+		infile.read((char*)&ageSize, sizeof(int));
+
+		char* imgdata = new char[imageSize];
+		infile.read(imgdata, imageSize);
+		
+
+		Image img = LoadImageEx((Color*)imgdata, width, height);
+		char* name = new char[nameSize + 1];
+		int age = 0;
+
+		infile.read((char*)name, nameSize);
+		
+		name[nameSize] = '\0';
+		infile.read((char*)&age, ageSize);
+		
+
+		Record* r = new Record();
+		r->image = img;
+		r->name = string(name);
+		r->age = age;
+
+		
+		delete[] imgdata;
+		delete[] name;
+		
+		return r;
+		
 	}
 	infile.close();
 
