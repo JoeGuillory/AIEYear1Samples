@@ -24,11 +24,11 @@ void DataFile::AddRecord(string imageFilename, string name, int age)
 	r->age = age;
 
 	recordCount++;
+	Save(filepath, r, recordCount);
 }
 // Gets the index of the record
 DataFile::Record* DataFile::GetRecord(int index)
 {
-	
 	return Load(index);
 }
 // Saves the records to the file
@@ -65,6 +65,7 @@ void DataFile::Load(string filename)
 {
 	filepath = filename;
 }
+//Loads the required Record
 DataFile::Record* DataFile::Load(int index)
 {
 	ifstream infile(filepath, std::ios::in | ios::binary);
@@ -75,40 +76,31 @@ DataFile::Record* DataFile::Load(int index)
 		
 		infile.seekg(0, ios::beg);
 		infile.read((char*)&recordCount, sizeof(int));
-		std::cout << infile.tellg() << std::endl;
+
 		int nameSize = 0;
 		int ageSize = 0;
 		int width = 0, height = 0, format = 0, imageSize = 0;
-		// read teh sizes of the current record
-		// seekg path the rest of record
 
+		//Reads the needed things to be able to skip the next record
 		for (int i = 0; i < index ; i++)
 		{
 			infile.read((char*)&width, sizeof(int));
-			
 			infile.read((char*)&height, sizeof(int));
 			
-
 			imageSize = sizeof(Color) * width * height;
 
 			infile.read((char*)&nameSize, sizeof(int));
-			
 			infile.read((char*)&ageSize, sizeof(int));
 
-			
-			
 			infile.seekg(imageSize + nameSize + ageSize,ios::cur);
-
 		}
+
 		infile.read((char*)&width, sizeof(int));
-		
 		infile.read((char*)&height, sizeof(int));
-		
 
 		imageSize = sizeof(Color) * width * height;
 
 		infile.read((char*)&nameSize, sizeof(int));
-		
 		infile.read((char*)&ageSize, sizeof(int));
 
 		char* imgdata = new char[imageSize];
@@ -144,4 +136,3 @@ DataFile::Record* DataFile::Load(int index)
 void DataFile::Clear()
 {
 	
-}
