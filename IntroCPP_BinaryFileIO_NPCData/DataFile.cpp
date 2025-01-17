@@ -135,4 +135,5 @@ DataFile::Record* DataFile::Load(int index)
 //Deletes everything in the array
 void DataFile::Clear()
 {
+}
 	
