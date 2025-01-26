@@ -19,20 +19,29 @@ public:
 	Map();
 	~Map();
 
-
+	Insert(Pair* pair);
+	Remove(Pair* pair);
+	
 
 
 
 private:
-	Pair* m_pairArray;
-
+	Pair** m_pairArray;
+	int m_length;
 };
 
 //Functions for Map
 template<typename T, typename J>
 inline Map<T, J>::Map()
 {
-	m_pairArray = new 
+	m_pairArray = new Pair * [m_length];
+	
+}
+
+template<typename T, typename J>
+inline Map<T, J>::~Map()
+{
+	delete m_pairArray;
 }
 
 
