@@ -24,6 +24,7 @@
 #include <random>
 #include <time.h>
 #include "Critter.h"
+#include "Map.h"
 
 int main(int argc, char* argv[])
 {
@@ -38,7 +39,6 @@ int main(int argc, char* argv[])
     //--------------------------------------------------------------------------------------
 
     srand(time(NULL));
-
 
     Critter critters[1000]; 
 
