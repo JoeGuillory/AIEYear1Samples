@@ -19,14 +19,10 @@ public:
 	Map();
 	~Map();
 
-	Insert(Pair* pair);
-	Remove(Pair* pair);
-	
-
 
 
 private:
-	Pair** m_pairArray;
+	Pair<T,J>** m_pairArray;
 	int m_length;
 };
 
@@ -43,8 +39,6 @@ inline Map<T, J>::~Map()
 {
 	delete m_pairArray;
 }
-
-
 
 
 
