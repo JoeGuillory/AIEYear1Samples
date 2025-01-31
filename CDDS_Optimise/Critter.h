@@ -2,6 +2,7 @@
 
 
 #include "raylib.h"
+#include "../CDDS_Optimise/src/AABB.h"
 
 class Critter
 {
@@ -41,6 +42,6 @@ public:
 	void SetDirty() { m_isDirty = true; }
 
 	bool IsDead() { return m_isLoaded == false; }
-
+	AABB GetBoundry();
 };
 

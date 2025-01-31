@@ -24,6 +24,8 @@
 #include <random>
 #include <time.h>
 #include "Critter.h"
+#include "src/QuadTree.h"
+#include "src/TreeNode.h"
 
 
 int main(int argc, char* argv[])
@@ -40,8 +42,13 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    Critter critters[1000]; 
+    QuadTree<Critter> tree;
+    Critter crit;
 
+    crit.Init({ (float)(5 + rand() % (screenWidth - 10)), (float)(5 + (rand() % screenHeight - 10)) },{1,1}, 12, "res/10.png");
+    tree.Insert(TreeNode<Critter>(crit, crit.GetBoundry()));
+    Critter critters[1000]; 
+    
     // create some critters
     const int CRITTER_COUNT = 50;
     const int MAX_VELOCITY = 80;
@@ -58,6 +65,7 @@ int main(int argc, char* argv[])
             { (float)(5+rand() % (screenWidth-10)), (float)(5+(rand() % screenHeight-10)) },
             velocity,
             12, "res/10.png");
+       
     }
 
 
@@ -201,6 +209,7 @@ int main(int argc, char* argv[])
         // (if you're wondering why it looks a little odd when sometimes critters are destroyed when they're not quite touching the 
         // destroyer, it's because the origin is at the top-left. ...you could fix that!)
         destroyer.Draw();
+        tree.Draw();
 
         DrawFPS(10, 10);
         //DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);

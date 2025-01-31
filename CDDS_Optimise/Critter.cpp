@@ -1,5 +1,5 @@
 #include "Critter.h"
-
+#include "src/AABB.h"
 
 Critter::Critter()
 {
@@ -50,4 +50,12 @@ void Critter::Draw()
 		return;
 
 	DrawTexture(m_texture, m_position.x - m_texture.width / 2, m_position.y- m_texture.height /2, WHITE);
+}
+
+AABB Critter::GetBoundry()
+{
+	Vector2 box = { m_texture.width / 2, m_texture.height / 2 };
+	 return AABB(m_position, box);
+
+
 }
