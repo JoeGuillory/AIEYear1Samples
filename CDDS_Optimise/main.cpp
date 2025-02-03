@@ -42,11 +42,7 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    QuadTree<Critter> tree;
-    Critter crit;
-
-    crit.Init({ (float)(5 + rand() % (screenWidth - 10)), (float)(5 + (rand() % screenHeight - 10)) },{1,1}, 12, "res/10.png");
-    tree.Insert(TreeNode<Critter>(crit, crit.GetBoundry()));
+    
     Critter critters[1000]; 
     
     // create some critters
@@ -65,15 +61,15 @@ int main(int argc, char* argv[])
             { (float)(5+rand() % (screenWidth-10)), (float)(5+(rand() % screenHeight-10)) },
             velocity,
             12, "res/10.png");
-       
+        
     }
-
+    
 
     Critter destroyer;
     Vector2 velocity = { -100 + (rand() % 200), -100 + (rand() % 200) };
     velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
     destroyer.Init(Vector2{ (float)(screenWidth >> 1), (float)(screenHeight >> 1) }, velocity, 20, "res/9.png");
-
+    
     float timer = 1;
     Vector2 nextSpawnPos = destroyer.GetPosition();
 
@@ -199,7 +195,7 @@ int main(int argc, char* argv[])
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
-
+        
         // draw the critters
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
@@ -209,7 +205,6 @@ int main(int argc, char* argv[])
         // (if you're wondering why it looks a little odd when sometimes critters are destroyed when they're not quite touching the 
         // destroyer, it's because the origin is at the top-left. ...you could fix that!)
         destroyer.Draw();
-        tree.Draw();
 
         DrawFPS(10, 10);
         //DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);

@@ -9,23 +9,23 @@ class QuadTree
 {
 public:
 	static const int m_capacity = 2;
-	enum SUBTREE{TOP_LEFT = 0,TOP_RIGHT,BOTTOM_LEFT,BOTTOM_RIGHT};
+	
 
 public:
 	QuadTree<T>();
 	QuadTree<T>(AABB boundry);
 	~QuadTree<T>();
 
-	bool Insert(TreeNode<T> object);
+	bool Insert(TreeNode<T>* object);
 	void Subdivide();
 	void Update(float deltaTime);
 	void Draw();
 
 private:
-	List<QuadTree<T>*> m_children;
+	QuadTree<T>** m_children;
 	int m_childrenLength;
 	AABB m_boundry;
-	List<TreeNode<T>*> m_objects;
+	TreeNode<T>** m_objects;
 	
 };
 
@@ -50,38 +50,57 @@ inline QuadTree<T>::QuadTree(AABB boundry) : m_boundry(boundry), m_childrenLengt
 template<typename T>
 inline QuadTree<T>::~QuadTree()
 {
-	if (m_children.last() != nullptr)
+	if (m_children != nullptr)
 	{
-		m_children.destroy();
+		for (int i = 0; i < 4; i++)
+		{
+			if (m_children[i] != nullptr)
+				delete m_children[i];
+		}
 	}
-	if (m_objects.last() != nullptr)
+	if (m_objects != nullptr)
 	{
-		m_objects.destroy();
+		for (int i = 0; i < m_capacity; i++)
+		{
+			if (m_objects[i] != nullptr)
+				delete m_objects[i];
+		}
+		delete m_objects;
+		m_objects = nullptr;
 	}
 }
 
 template<typename T>
-inline bool QuadTree<T>::Insert(TreeNode<T> object)
+inline bool QuadTree<T>::Insert(TreeNode<T>* object)
 {
-	if (m_boundry.Contains(object.boundry.center) == false)
+	if (m_boundry.Contains(object->boundry.center) == false)
 		return false;
 
-	if (m_children.last() == nullptr)
+	if (m_children == nullptr)
 	{
-		
-		if (m_objects.getLength() == m_capacity - 1)
+		if (m_objects == nullptr)
 		{
-			m_objects.pushBack(&object);
-			return true;
+			m_objects = new TreeNode<T>* [m_capacity];
+			memset(m_objects, 0, sizeof(TreeNode<T>*) * m_capacity);
+		}
+		if (m_objects[m_capacity -1] == nullptr)
+		{
+			for (int i = 0; i < m_capacity; i++)
+			{
+				if (m_objects[i] == nullptr)
+				{
+					m_objects[i] = object;
+					return true;
+				}
+			}
 		}
 
 		Subdivide();
 	}
 	
-	for (auto iter = m_children.begin(); iter != nullptr; iter++)
+	for (int i = 0; i < 4; i++)
 	{
-		QuadTree<T>* value = *iter;
-		if (value->Insert(object) == true)
+		if (m_children[i]->Insert(object) == true)
 			return true;
 	}
 
@@ -91,49 +110,48 @@ inline bool QuadTree<T>::Insert(TreeNode<T> object)
 template<typename T>
 inline void QuadTree<T>::Subdivide()
 {
-
+	m_children = new QuadTree<T> * [4];
 	Vector2 qSize{ m_boundry.halfsize.x / 2, m_boundry.halfsize.y / 2 };
 	Vector2 qCentre{ m_boundry.center.x - qSize.x,
 	m_boundry.center.y - qSize.y };
-	m_children.pushBack(new QuadTree(AABB(qCentre, qSize)));
+	m_children[0] = new QuadTree<T>(AABB(qCentre, qSize));
 	qCentre = Vector2{ m_boundry.center.x + qSize.x,
 	m_boundry.center.y - qSize.y };
-	m_children.pushBack(new QuadTree(AABB(qCentre, qSize)));
+	m_children[1] = new QuadTree<T>(AABB(qCentre, qSize));
 	qCentre = Vector2{ m_boundry.center.x - qSize.x,
 	m_boundry.center.y + qSize.y };
-	m_children.pushBack(new QuadTree(AABB(qCentre, qSize)));
+	m_children[2] = new QuadTree<T>(AABB(qCentre, qSize));
 	qCentre = Vector2{ m_boundry.center.x + qSize.x,
 	m_boundry.center.y + qSize.y };
-	m_children.pushBack(new QuadTree(AABB(qCentre, qSize)));
-	if (m_objects.last() != nullptr) 
+	m_children[3] = new QuadTree<T>(AABB(qCentre, qSize));
+	if (m_objects != nullptr) 
 	{
-
-		for (auto t = m_objects.begin(); t != nullptr; t++) {
-			if (*t == nullptr)
+		for (int i = 0; i < m_capacity; i++)
+		{
+			if (m_objects[i] == nullptr)
 				continue;
-			// find a subtree to insert the object into
-			
-			for (auto iter = m_children.begin(); iter != nullptr; iter++)
-			{
-				QuadTree<T>* value = *iter;
-				TreeNode<T>* nodevalue = *t;
-				if (value->Insert(*nodevalue) == true)
-					break;
-			}
 
-			for (auto t = m_objects.begin(); t != nullptr; t++)
-			{
-				t = nullptr;
-			}
+			for (int j = 0; j < 4; j++)
+				if (m_children[j]->Insert(m_objects[i]) == true)
+					break;
+
+			m_objects[i] = nullptr;
 		}
-		m_objects.destroy();
 	}
+
+	delete m_objects;
+	m_objects = nullptr;
 }
 
 
 template<typename T>
 inline void QuadTree<T>::Update(float deltaTime)
 {
+
+
+
+
+
 }
 
 template<typename T>
@@ -160,10 +178,10 @@ inline void QuadTree<T>::Draw()
 		m_boundry.center.x + m_boundry.halfsize.x,
 		m_boundry.center.y - m_boundry.halfsize.y, RED);
 
-	for (auto iter = m_children.begin(); iter != nullptr; iter++)
+	if (m_children != nullptr)
 	{
-		QuadTree<T>* value = *iter;
-		value->Draw();
+		for (int i = 0; i < 4; i++)
+			m_children[i]->Draw();
 	}
 
 
