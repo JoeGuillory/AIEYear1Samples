@@ -1,31 +1,29 @@
 #pragma once
-
+#include "Pair.h"
+#include "List.h"
 template<typename T, typename J>
 class Map
 {
 public:
 
-	Map();
+	Map<T,J>();
 	~Map();
 
 
 
 private:
-
+	List<Pair<T, J>> m_pairlist;
 };
 
 //Functions for Map
 template<typename T, typename J>
 inline Map<T, J>::Map()
-{
-	m_pairArray = new Pair * [m_length];
-	
+{	
 }
 
 template<typename T, typename J>
 inline Map<T, J>::~Map()
 {
-	delete m_pairArray;
 }
 
 

@@ -3,7 +3,6 @@
 
 #include "raylib.h"
 #include "../CDDS_Optimise/src/AABB.h"
-
 class Critter
 {
 protected:	
@@ -21,6 +20,7 @@ public:
 	~Critter();
 
 	void Init(Vector2 position, Vector2 velocity, float radius, const char* texture);
+	void Reset();
 	void Destroy();
 	void Update(float dt);
 	void Draw();

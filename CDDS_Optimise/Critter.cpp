@@ -26,6 +26,15 @@ void Critter::Init(Vector2 position, Vector2 velocity, float radius, const char*
 	m_isLoaded = true;
 }
 
+void Critter::Reset()
+{
+	m_position = { 0,0 };
+	m_velocity = { 0,0 };
+	m_radius = 0;
+	UnloadTexture(m_texture);
+	m_isLoaded = false;
+}
+
 void Critter::Destroy()
 {
 	UnloadTexture(m_texture);

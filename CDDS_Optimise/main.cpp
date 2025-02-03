@@ -26,6 +26,7 @@
 #include "Critter.h"
 #include "src/QuadTree.h"
 #include "src/TreeNode.h"
+#include "src/ObjectPool.h"
 
 
 int main(int argc, char* argv[])
@@ -42,7 +43,7 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    
+    ObjectPool<Critter*> critterpool = ObjectPool<Critter*>(1000);
     Critter critters[1000]; 
     
     // create some critters
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
         velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
 
         // create a critter in a random location
-        critters[i].Init(
+       critterpool.Get()->Init(
             { (float)(5+rand() % (screenWidth-10)), (float)(5+(rand() % screenHeight-10)) },
             velocity,
             12, "res/10.png");
@@ -105,34 +106,36 @@ int main(int argc, char* argv[])
 
         // update the critters
         // (dirty flags will be cleared during update)
-        for (int i = 0; i < CRITTER_COUNT; i++)
+        for (auto t = critterpool.GetActive().begin(); t != critterpool.GetActive().end(); t++)
         {
-            critters[i].Update(delta);
+            (*t)->Update(delta);
 
             // check each critter against screen bounds
-            if (critters[i].GetX() < 0) {
-                critters[i].SetX(0);
-                critters[i].SetVelocity(Vector2{ -critters[i].GetVelocity().x, critters[i].GetVelocity().y });
+            if ((*t)->GetX() < 0)
+            {
+                (*t)->SetX(0);
+                (*t)->SetVelocity(Vector2{ -(*t)->GetVelocity().x, (*t)->GetVelocity().y});
             }
-            if (critters[i].GetX() > screenWidth) {
-                critters[i].SetX(screenWidth);
-                critters[i].SetVelocity(Vector2{ -critters[i].GetVelocity().x, critters[i].GetVelocity().y });
+            if ((*t)->GetX() > screenWidth) {
+                (*t)->SetX(screenWidth);
+                (*t)->SetVelocity(Vector2{ -(*t)->GetVelocity().x, (*t)->GetVelocity().y});
             }
-            if (critters[i].GetY() < 0) {
-                critters[i].SetY(0);
-                critters[i].SetVelocity(Vector2{ critters[i].GetVelocity().x, -critters[i].GetVelocity().y });
+            if ((*t)->GetY() < 0) {
+                (*t)->SetY(0);
+                (*t)->SetVelocity(Vector2{ (*t)->GetVelocity().x, -(*t)->GetVelocity().y});
             }
-            if (critters[i].GetY() > screenHeight) {
-                critters[i].SetY(screenHeight);
-                critters[i].SetVelocity(Vector2{ critters[i].GetVelocity().x, -critters[i].GetVelocity().y });
+            if ((*t)->GetY() > screenHeight) {
+                (*t)->SetY(screenHeight);
+                (*t)->SetVelocity(Vector2{ (*t)->GetVelocity().x, -(*t)->GetVelocity().y});
             }
 
             // kill any critter touching the destroyer
             // simple circle-to-circle collision check
-            float dist = Vector2Distance(critters[i].GetPosition(), destroyer.GetPosition());
-            if (dist < critters[i].GetRadius() + destroyer.GetRadius())
+            float dist = Vector2Distance((*t)->GetPosition(), destroyer.GetPosition());
+            if (dist < (*t)->GetRadius() + destroyer.GetRadius())
             {
-                critters[i].Destroy();
+                (*t)->Reset();
+                critterpool.Release(*t);
                 // this would be the perfect time to put the critter into an object pool
             }
         }

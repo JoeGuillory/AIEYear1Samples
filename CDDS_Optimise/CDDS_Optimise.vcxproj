@@ -172,9 +172,14 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Iterator.h" />
+    <ClInclude Include="src\List.h" />
+    <ClInclude Include="src\Node.h" />
+    <ClInclude Include="src\ObjectPool.h" />
     <ClInclude Include="src\AABB.h" />
     <ClInclude Include="Critter.h" />
-    <ClInclude Include="Map.h" />
+    <ClInclude Include="src\Map.h" />
+    <ClInclude Include="src\Pair.h" />
     <ClInclude Include="src\QuadTree.h" />
     <ClInclude Include="src\TreeNode.h" />
   </ItemGroup>
