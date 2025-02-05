@@ -14,12 +14,12 @@ protected:
 
 	bool m_isLoaded;
 	bool m_isDirty;		// indicates if we've already processed a collision response for this critter
-	
+	AABB m_boundry;
 public:
 	Critter();
 	~Critter();
 
-	void Init(Vector2 position, Vector2 velocity, float radius, const char* texture);
+	void Init(Vector2 position, Vector2 velocity, float radius, Texture2D texture);
 	void Reset();
 	void Destroy();
 	void Update(float dt);
@@ -42,6 +42,6 @@ public:
 	void SetDirty() { m_isDirty = true; }
 
 	bool IsDead() { return m_isLoaded == false; }
-	AABB GetBoundry();
+	AABB& GetBoundry();
 };
 

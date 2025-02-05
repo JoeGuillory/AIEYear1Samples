@@ -13,14 +13,14 @@ public:
 	int CountAll();
 
 	void Clear();
-	T* Get();
-	List<T*> GetActive();
-	void Release(T* value);
+	T Get();
+	List<T> GetActive();
+	void Release(T value);
 
 
 private:
-	List<T*> m_inactive;
-	List<T*> m_active;
+	List<T> m_inactive;
+	List<T> m_active;
 
 };
 
@@ -60,7 +60,7 @@ inline void ObjectPool<T>::Clear()
 }
 
 template<typename T>
-inline T* ObjectPool<T>::Get()
+inline T ObjectPool<T>::Get()
 {
 	if (m_inactive.last() == nullptr)
 		m_inactive.pushBack(new T());
@@ -72,13 +72,13 @@ inline T* ObjectPool<T>::Get()
 }
 
 template<typename T>
-inline List<T*> ObjectPool<T>::GetActive()
+inline List<T> ObjectPool<T>::GetActive()
 {
 	return m_active;
 }
 
 template<typename T>
-inline void ObjectPool<T>::Release(T* value)
+inline void ObjectPool<T>::Release(T value)
 {
 	m_inactive.pushBack(value);
 	m_active.remove(value);

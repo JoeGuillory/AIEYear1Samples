@@ -11,17 +11,16 @@ Critter::Critter()
 
 Critter::~Critter()
 {
-	UnloadTexture(m_texture);
 	m_isLoaded = false;
 }
 
-void Critter::Init(Vector2 position, Vector2 velocity, float radius, const char* texture)
+void Critter::Init(Vector2 position, Vector2 velocity, float radius, Texture2D texture)
 {
 	m_position = position;
 	m_velocity = velocity;
 	m_radius = radius;
 	
-	m_texture = LoadTexture(texture);	
+	m_texture = texture;
 
 	m_isLoaded = true;
 }
@@ -31,13 +30,12 @@ void Critter::Reset()
 	m_position = { 0,0 };
 	m_velocity = { 0,0 };
 	m_radius = 0;
-	UnloadTexture(m_texture);
 	m_isLoaded = false;
 }
 
 void Critter::Destroy()
 {
-	UnloadTexture(m_texture);
+
 	m_isLoaded = false;
 }
 
@@ -61,10 +59,11 @@ void Critter::Draw()
 	DrawTexture(m_texture, m_position.x - m_texture.width / 2, m_position.y- m_texture.height /2, WHITE);
 }
 
-AABB Critter::GetBoundry()
+AABB& Critter::GetBoundry()
 {
 	Vector2 box = { m_texture.width / 2, m_texture.height / 2 };
-	 return AABB(m_position, box);
+	m_boundry = { m_position,box };
+	return m_boundry;
 
 
 }

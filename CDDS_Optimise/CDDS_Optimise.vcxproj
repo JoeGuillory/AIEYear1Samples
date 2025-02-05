@@ -170,6 +170,7 @@
     <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="Critter.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Iterator.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="src\Map.h" />
     <ClInclude Include="src\Pair.h" />
     <ClInclude Include="src\QuadTree.h" />
+    <ClInclude Include="src\TextureManager.h" />
     <ClInclude Include="src\TreeNode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

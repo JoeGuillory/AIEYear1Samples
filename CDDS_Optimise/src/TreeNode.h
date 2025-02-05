@@ -6,20 +6,22 @@ class TreeNode
 {
 public:
 	TreeNode<T>();
-	TreeNode<T>(T value, AABB box);
+	TreeNode<T>(T value, AABB& box);
 	~TreeNode<T>() = default;
-	
+
 	T value;
-	AABB boundry;
+	AABB* boundry;
 };
 
 
 template<typename T>
-inline TreeNode<T>::TreeNode() : value(nullptr), boundry(nullptr)
+inline TreeNode<T>::TreeNode()
 {
+
 }
 
 template<typename T>
-inline TreeNode<T>::TreeNode(T value, AABB box) : value(value), boundry(box)
+inline TreeNode<T>::TreeNode(T value, AABB& box) : value(value), boundry(&box)
 {
+
 }

@@ -24,15 +24,13 @@
 #include <random>
 #include <time.h>
 #include "Critter.h"
+#include "src/TextureManager.h"
 #include "src/QuadTree.h"
-#include "src/TreeNode.h"
-#include "src/ObjectPool.h"
-
 
 int main(int argc, char* argv[])
 {
     // Initialization
-    //--------------------------------------------------------------------------------------
+   //--------------------------------------------------------------------------------------
     int screenWidth = 800;
     int screenHeight = 450;
 
@@ -43,9 +41,9 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    ObjectPool<Critter> critterpool = ObjectPool<Critter>(1000);
-    Critter critters[1000]; 
-    
+    QuadTree<Critter> critterTree;
+    Critter critters[1000];
+
     // create some critters
     const int CRITTER_COUNT = 50;
     const int MAX_VELOCITY = 80;
@@ -53,24 +51,24 @@ int main(int argc, char* argv[])
     for (int i = 0; i < CRITTER_COUNT; i++)
     {
         // create a random direction vector for the velocity
-        Vector2 velocity = { -100+(rand()%200), -100+(rand()%200) };
+        Vector2 velocity = { -100 + (rand() % 200), -100 + (rand() % 200) };
         // normalize and scale by a random speed
         velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
 
         // create a critter in a random location
-       (*critterpool.Get()).Init(
-            { (float)(5+rand() % (screenWidth-10)), (float)(5+(rand() % screenHeight-10)) },
+        critters[i].Init(
+            { (float)(5 + rand() % (screenWidth - 10)), (float)(5 + (rand() % screenHeight - 10)) },
             velocity,
-            12, "res/10.png");
-        
+            12, TextureManager::instance().GetTexture(1));
+        critterTree.Insert(new TreeNode<Critter>(critters[i], critters[i].GetBoundry()));
     }
-    
+
 
     Critter destroyer;
     Vector2 velocity = { -100 + (rand() % 200), -100 + (rand() % 200) };
     velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
-    destroyer.Init(Vector2{ (float)(screenWidth >> 1), (float)(screenHeight >> 1) }, velocity, 20, "res/9.png");
-    
+    destroyer.Init(Vector2{ (float)(screenWidth >> 1), (float)(screenHeight >> 1) }, velocity, 20, TextureManager::instance().GetTexture(2));
+    critterTree.Insert(new TreeNode<Critter>(destroyer, destroyer.GetBoundry()));
     float timer = 1;
     Vector2 nextSpawnPos = destroyer.GetPosition();
 
@@ -83,9 +81,10 @@ int main(int argc, char* argv[])
         //----------------------------------------------------------------------------------
 
         float delta = GetFrameTime();
-
+        critterTree.Update(delta);
         // update the destroyer
         destroyer.Update(delta);
+        destroyer.GetBoundry();
         // check each critter against screen bounds
         if (destroyer.GetX() < 0) {
             destroyer.SetX(0);
@@ -106,74 +105,66 @@ int main(int argc, char* argv[])
 
         // update the critters
         // (dirty flags will be cleared during update)
-        for (auto t = critterpool.GetActive().begin(); t != nullptr; t++)
+        for (int i = 0; i < CRITTER_COUNT; i++)
         {
-            (*t)->Update(delta);
-
+            critters[i].Update(delta);
+            critters[i].GetBoundry();
             // check each critter against screen bounds
-            if ((*t)->GetX() < 0)
-            {
-                (*t)->SetX(0);
-                (*t)->SetVelocity(Vector2{ -(*t)->GetVelocity().x, (*t)->GetVelocity().y});
+            if (critters[i].GetX() < 0) {
+                critters[i].SetX(0);
+                critters[i].SetVelocity(Vector2{ -critters[i].GetVelocity().x, critters[i].GetVelocity().y });
             }
-            if ((*t)->GetX() > screenWidth) {
-                (*t)->SetX(screenWidth);
-                (*t)->SetVelocity(Vector2{ -(*t)->GetVelocity().x, (*t)->GetVelocity().y});
+            if (critters[i].GetX() > screenWidth) {
+                critters[i].SetX(screenWidth);
+                critters[i].SetVelocity(Vector2{ -critters[i].GetVelocity().x, critters[i].GetVelocity().y });
             }
-            if ((*t)->GetY() < 0) {
-                (*t)->SetY(0);
-                (*t)->SetVelocity(Vector2{ (*t)->GetVelocity().x, -(*t)->GetVelocity().y});
+            if (critters[i].GetY() < 0) {
+                critters[i].SetY(0);
+                critters[i].SetVelocity(Vector2{ critters[i].GetVelocity().x, -critters[i].GetVelocity().y });
             }
-            if ((*t)->GetY() > screenHeight) {
-                (*t)->SetY(screenHeight);
-                (*t)->SetVelocity(Vector2{ (*t)->GetVelocity().x, -(*t)->GetVelocity().y});
+            if (critters[i].GetY() > screenHeight) {
+                critters[i].SetY(screenHeight);
+                critters[i].SetVelocity(Vector2{ critters[i].GetVelocity().x, -critters[i].GetVelocity().y });
             }
 
             // kill any critter touching the destroyer
             // simple circle-to-circle collision check
-            float dist = Vector2Distance((*t)->GetPosition(), destroyer.GetPosition());
-            if (dist < (*t)->GetRadius() + destroyer.GetRadius())
+            float dist = Vector2Distance(critters[i].GetPosition(), destroyer.GetPosition());
+            if (dist < critters[i].GetRadius() + destroyer.GetRadius())
             {
-                (*t)->Reset();
-                critterpool.Release(*t);
+                critters[i].Destroy();
                 // this would be the perfect time to put the critter into an object pool
             }
         }
-                
+
         // check for critter-on-critter collisions
-        for (auto t = critterpool.GetActive().begin(); t != nullptr; t++)
-        {            
-            int i = 0;
-            for (auto j = critterpool.GetActive().begin(); t != critterpool.GetActive().end(); j++)
-            {
-                int f = 0;
-                if (i == f || (*t)->IsDirty()) // note: the other critter (j) could be dirty - that's OK
+        for (int i = 0; i < CRITTER_COUNT; i++)
+        {
+            for (int j = 0; j < CRITTER_COUNT; j++) {
+                if (i == j || critters[i].IsDirty()) // note: the other critter (j) could be dirty - that's OK
                     continue;
                 // check every critter against every other critter
-                float dist = Vector2Distance((*t)->GetPosition(), (*j)->GetPosition());
-                if (dist < (*t)->GetRadius() + (*j)->GetRadius())
+                float dist = Vector2Distance(critters[i].GetPosition(), critters[j].GetPosition());
+                if (dist < critters[i].GetRadius() + critters[j].GetRadius())
                 {
                     // collision!
                     // do math to get critters bouncing
-                    Vector2 normal = Vector2Normalize( Vector2Subtract((*j)->GetPosition(), (*t)->GetPosition()));
+                    Vector2 normal = Vector2Normalize(Vector2Subtract(critters[j].GetPosition(), critters[i].GetPosition()));
 
                     // not even close to real physics, but fine for our needs
-                    (*t)->SetVelocity(Vector2Scale(normal, -MAX_VELOCITY));
+                    critters[i].SetVelocity(Vector2Scale(normal, -MAX_VELOCITY));
                     // set the critter to *dirty* so we know not to process any more collisions on it
-                    (*t)->SetDirty(); 
+                    critters[i].SetDirty();
 
                     // we still want to check for collisions in the case where 1 critter is dirty - so we need a check 
                     // to make sure the other critter is clean before we do the collision response
-                    if (!(*j)->IsDirty())
-                    {
-                        (*j)->SetVelocity(Vector2Scale(normal, MAX_VELOCITY));
-                        (*j)->SetDirty();
+                    if (!critters[j].IsDirty()) {
+                        critters[j].SetVelocity(Vector2Scale(normal, MAX_VELOCITY));
+                        critters[j].SetDirty();
                     }
                     break;
                 }
-                f++;
             }
-            i++;
         }
 
         timer -= delta;
@@ -182,17 +173,17 @@ int main(int argc, char* argv[])
             timer = 1;
 
             // find any dead critters and spit them out (respawn)
-            for (auto t = critterpool.GetActive().begin(); t != nullptr; t++)
+            for (int i = 0; i < CRITTER_COUNT; i++)
             {
-                if ((*t)->IsDead())
+                if (critters[i].IsDead())
                 {
                     Vector2 normal = Vector2Normalize(destroyer.GetVelocity());
-                    
+
                     // get a position behind the destroyer, and far enough away that the critter won't bump into it again
                     Vector2 pos = destroyer.GetPosition();
                     pos = Vector2Add(pos, Vector2Scale(normal, -50));
                     // its pretty ineficient to keep reloading textures. ...if only there was something else we could do
-                    critterpool.Get()->Init(pos, Vector2Scale(normal, -MAX_VELOCITY), 12, "res/10.png");
+                    critters[i].Init(pos, Vector2Scale(normal, -MAX_VELOCITY), 12, TextureManager::instance().GetTexture(1));
                     break;
                 }
             }
@@ -204,11 +195,12 @@ int main(int argc, char* argv[])
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
-        
+
+        critterTree.Draw();
         // draw the critters
-        for (auto t = critterpool.GetActive().begin(); t != nullptr; t++)
+        for (int i = 0; i < CRITTER_COUNT; i++)
         {
-            (*t)->Draw();
+            critters[i].Draw();
         }
         // draw the destroyer
         // (if you're wondering why it looks a little odd when sometimes critters are destroyed when they're not quite touching the 
@@ -222,7 +214,11 @@ int main(int argc, char* argv[])
         //----------------------------------------------------------------------------------
     }
 
-    critterpool.Clear();
+    for (int i = 0; i < CRITTER_COUNT; i++)
+    {
+        critters[i].Destroy();
+    }
+
     // De-Initialization
     //--------------------------------------------------------------------------------------   
     CloseWindow();        // Close window and OpenGL context

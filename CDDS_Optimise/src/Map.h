@@ -11,6 +11,7 @@ public:
 
 	void Insert(T key, J value);
 	void Insert(Pair<T, J>* pair);
+	void Remove(T key);
 	J Get(T key);
 private:
 	List<Pair<T, J>*> m_pairlist;
@@ -44,10 +45,20 @@ inline J Map<T, J>::Get(T key)
 {
 	for (auto t = m_pairlist.begin(); t != nullptr; t++)
 	{
-		if (*(t).key == key)
-			return *(t).value;
+		if ((*t)->key == key)
+			return (*t)->value;
 	}
 	return J();
+}
+
+template<typename T, typename J>
+inline void Map<T, J>::Remove(T key)
+{
+	for (auto t = m_pairlist.begin(); t != nullptr; t++)
+	{
+		if (*(t).key == key)
+			m_pairlist.remove(*t);
+	}
 }
 
 
