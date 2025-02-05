@@ -19,7 +19,7 @@ public:
 	bool Insert(TreeNode<T>* object);
 	void Subdivide();
 	void Update(float deltaTime);
-	void Remove(TreeNode<T>* object);
+	TreeNode<T>* Remove(TreeNode<T>* object);
 	void Draw();
 
 private:
@@ -152,15 +152,21 @@ inline void QuadTree<T>::Update(float deltaTime)
 	{
 		for (int i = 0; i < m_capacity -1; i++)
 		{
-			if (m_boundry.Contains(m_objects[i]->boundry->center))
+			if (m_objects[i] != nullptr)
 			{
 
-
+				if (!m_boundry.Contains(m_objects[i]->boundry->center))
+				{
+					Insert(Remove(m_objects[i]));
+					if (m_children)
+					{
+						delete m_children;
+						m_children = nullptr;
+					}
+				}
 			}
-
 		}
 	}
-
 
 	if (m_children != nullptr)
 	{
@@ -173,9 +179,30 @@ inline void QuadTree<T>::Update(float deltaTime)
 }
 
 template<typename T>
-inline void QuadTree<T>::Remove(TreeNode<T>* object)
+inline TreeNode<T>* QuadTree<T>::Remove(TreeNode<T>* object)
 {
-
+	if (m_objects)
+	{
+		for (int i = 0; i < m_capacity; i++)
+		{
+			if (m_objects[i] == object) 
+			{
+				TreeNode<T>* item = m_objects[i];
+				m_objects[i] = nullptr;
+				return item;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			if (m_children[i])
+			{
+				return m_children[i]->Remove(object);
+			}
+		}
+	}
 
 
 

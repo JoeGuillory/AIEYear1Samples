@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
 
         ClearBackground(RAYWHITE);
 
-        critterTree.Draw();
+        
         // draw the critters
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
