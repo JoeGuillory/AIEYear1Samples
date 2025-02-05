@@ -196,7 +196,7 @@ inline T List<T>::popFront()
 template<typename T>
 inline T List<T>::popBack()
 {
-	if (!m_tail)
+	if (m_tail == nullptr)
 		return T();
 
 	T value = m_tail->value;
@@ -212,7 +212,8 @@ inline T List<T>::popBack()
 	else
 	{
 		m_tail = m_tail->previous;
-		delete m_tail->next;
+		if(!m_tail->next)
+			delete m_tail->next;
 		m_tail->next = nullptr;
 		m_length--;
 	}
@@ -325,13 +326,13 @@ inline Iterator<T> List<T>::end() const
 {
 	if(!m_tail)
 		return Iterator<T>();
-	return Iterator<T>(m_tail);
+	return Iterator<T>(m_tail->next);
 }
 
 template<typename T>
 inline void List<T>::destroy()
 {
-	if (!m_tail)
+	if (m_tail == nullptr)
 		return;
 
 	for (int i = 0; i < m_length; i++)
