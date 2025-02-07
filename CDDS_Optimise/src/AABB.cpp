@@ -27,3 +27,11 @@ bool AABB::Intersects(AABB other)
 		return false;
 	return true;
 }
+
+bool AABB::Overlap(AABB other)
+{
+	return (center.x < other.center.x + other.halfsize.x && center.x + halfsize.x >= other.center.x && center.y < other.center.y + other.halfsize.y && center.y + halfsize.y >= other.center.y);
+}
+
+
+

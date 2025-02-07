@@ -4,34 +4,40 @@
 #include "AABB.h"
 #include "TreeNode.h"
 #include "List.h"
+#include "DynamicArray.h"
 template<typename T>
 class QuadTree
 {
 public:
 	static const int m_capacity = 2;
-	
+	static const int m_maxDepth = 6;
 
 public:
 	QuadTree<T>();
 	QuadTree<T>(AABB boundry);
 	~QuadTree<T>();
-
+	bool InsertObject(TreeNode<T>* object);
 	bool Insert(TreeNode<T>* object);
 	void Subdivide();
+	void UnSubdivide();
 	void Update(float deltaTime);
-	TreeNode<T>* Remove(TreeNode<T>* object);
+	DynamicArray<TreeNode<T>*> Search(AABB area);
+	void Search(AABB area, DynamicArray<TreeNode<T>*>& list);
+	bool HasItems(AABB area);
+	void Items(DynamicArray<TreeNode<T>*>& list);
+	bool Remove(TreeNode<T>* object);
 	void Draw();
 
-private:
-	QuadTree<T>** m_children;
-	int m_childrenLength;
+protected:
+	int m_depthOfTree;
 	AABB m_boundry;
-	TreeNode<T>** m_objects;
-	
+	DynamicArray<QuadTree*> m_children;
+	DynamicArray<TreeNode<T>*> m_objects;
+	DynamicArray<TreeNode<T>*> m_allobjects;
 };
 
 template<typename T>
-inline QuadTree<T>::QuadTree() : 	m_childrenLength(0)
+inline QuadTree<T>::QuadTree()
 {
 	if (IsWindowReady)
 	{
@@ -43,7 +49,7 @@ inline QuadTree<T>::QuadTree() : 	m_childrenLength(0)
 }
 
 template<typename T>
-inline QuadTree<T>::QuadTree(AABB boundry) : m_boundry(boundry), m_childrenLength(0)
+inline QuadTree<T>::QuadTree(AABB boundry) : m_boundry(boundry)
 {
 
 }
@@ -51,161 +57,229 @@ inline QuadTree<T>::QuadTree(AABB boundry) : m_boundry(boundry), m_childrenLengt
 template<typename T>
 inline QuadTree<T>::~QuadTree()
 {
-	if (m_children != nullptr)
+	
+	m_objects.Clear();
+	if (m_children.Length() != 0)
 	{
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < m_children.Length(); i++)
 		{
 			if (m_children[i] != nullptr)
 				delete m_children[i];
 		}
 	}
-	if (m_objects != nullptr)
-	{
-		for (int i = 0; i < m_capacity; i++)
-		{
-			if (m_objects[i] != nullptr)
-				delete m_objects[i];
-		}
-		delete m_objects;
-		m_objects = nullptr;
-	}
+}
+
+
+
+template<typename T>
+inline bool QuadTree<T>::InsertObject(TreeNode<T>* object)
+{
+	m_allobjects.Add(object);
+	return Insert(object);
 }
 
 template<typename T>
 inline bool QuadTree<T>::Insert(TreeNode<T>* object)
 {
-	if (m_boundry.Contains(object->boundry->center) == false)
+	if (m_boundry.Contains(object->boundry.center) == false)
 		return false;
 
-	if (m_children == nullptr)
+	if (m_children.Length() == 0)
 	{
-		if (m_objects == nullptr)
+		if (m_objects.Length() < m_capacity)
 		{
-			m_objects = new TreeNode<T>*[m_capacity];
-			memset(m_objects, 0, sizeof(TreeNode<T>*) * m_capacity);
-		}
-		if (m_objects[m_capacity -1] == nullptr)
-		{
-			for (int i = 0; i < m_capacity; i++)
-			{
-				if (m_objects[i] == nullptr)
-				{
-					m_objects[i] = object;
-					return true;
-				}
-			}
+			m_objects.Add(object);
+			return true;
 		}
 
 		Subdivide();
 	}
-	
-	for (int i = 0; i < 4; i++)
+
+	for (int i = 0; i < m_children.Length() ; i++)
 	{
 		if (m_children[i]->Insert(object) == true)
 			return true;
 	}
-
 	return false;
 }
 
 template<typename T>
 inline void QuadTree<T>::Subdivide()
 {
-	m_children = new QuadTree<T> * [4];
+
 	Vector2 qSize{ m_boundry.halfsize.x / 2, m_boundry.halfsize.y / 2 };
 	Vector2 qCentre{ m_boundry.center.x - qSize.x,
 	m_boundry.center.y - qSize.y };
-	m_children[0] = new QuadTree<T>(AABB(qCentre, qSize));
+	//Top left
+	m_children.Add(new QuadTree(AABB(qCentre, qSize)));
+
 	qCentre = Vector2{ m_boundry.center.x + qSize.x,
 	m_boundry.center.y - qSize.y };
-	m_children[1] = new QuadTree<T>(AABB(qCentre, qSize));
+	//Top Right
+	m_children.Add(new QuadTree(AABB(qCentre, qSize)));
+	
 	qCentre = Vector2{ m_boundry.center.x - qSize.x,
 	m_boundry.center.y + qSize.y };
-	m_children[2] = new QuadTree<T>(AABB(qCentre, qSize));
+	//Bottom Left
+	m_children.Add(new QuadTree(AABB(qCentre, qSize)));
+	
 	qCentre = Vector2{ m_boundry.center.x + qSize.x,
 	m_boundry.center.y + qSize.y };
-	m_children[3] = new QuadTree<T>(AABB(qCentre, qSize));
-	if (m_objects != nullptr) 
+	//Bottom Right
+	m_children.Add(new QuadTree(AABB(qCentre, qSize)));
+	if (m_objects.Length() != 0)
 	{
-		for (int i = 0; i < m_capacity; i++)
+		for (int i = 0; i < m_objects.Length(); i++)
 		{
-			if (m_objects[i] == nullptr)
-				continue;
-
-			for (int j = 0; j < 4; j++)
+			for (int j = 0; j < m_children.Length(); j++)
+			{
 				if (m_children[j]->Insert(m_objects[i]) == true)
 					break;
-
-			m_objects[i] = nullptr;
+			}
+			m_objects.Remove(m_objects[i]);
 		}
+
 	}
 
-	delete m_objects;
-	m_objects = nullptr;
+}
+
+template<typename T>
+inline void QuadTree<T>::UnSubdivide()
+{
+	for (int i = 0; i < m_children.Length(); i++)
+	{
+		if (m_children[i])
+		{
+			m_children[i]->m_objects.Clear();
+			delete m_children[i];
+		}
+	}
 }
 
 
 template<typename T>
 inline void QuadTree<T>::Update(float deltaTime)
 {
-	if (m_objects != nullptr)
+	if (m_objects.Length() != 0)
 	{
-		for (int i = 0; i < m_capacity -1; i++)
+		for (int i = 0; i < m_objects.Length(); i++)
 		{
-			if (m_objects[i] != nullptr)
+			if (!m_boundry.Contains(m_objects[i]->boundry.center))
 			{
-
-				if (!m_boundry.Contains(m_objects[i]->boundry->center))
-				{
-					Insert(Remove(m_objects[i]));
-					if (m_children)
-					{
-						delete m_children;
-						m_children = nullptr;
-					}
-				}
+				Insert(m_objects[i]);
+				m_objects.Remove(m_objects[i]);
 			}
 		}
 	}
-
-	if (m_children != nullptr)
+	for (int i = 0; i < m_children.Length(); i++)
 	{
-		for (int i = 0; i < 4; i++)
+		if (m_children[i])
 		{
 			m_children[i]->Update(deltaTime);
 		}
+	}
+	if (!HasItems(m_boundry))
+	{
+		UnSubdivide();
 	}
 
 }
 
 template<typename T>
-inline TreeNode<T>* QuadTree<T>::Remove(TreeNode<T>* object)
+inline DynamicArray<TreeNode<T>*> QuadTree<T>::Search(AABB area)
 {
-	if (m_objects)
+	DynamicArray<TreeNode<T>*> list;
+	Search(area, list);
+	return list;
+}
+
+template<typename T>
+inline void QuadTree<T>::Search(AABB area, DynamicArray<TreeNode<T>*>& list)
+{
+	if (m_objects.Length() != 0)
 	{
-		for (int i = 0; i < m_capacity; i++)
+		for (int i = 0; i < m_objects.Length(); i++)
 		{
-			if (m_objects[i] == object) 
+			if(area.Overlap(m_objects[i]->boundry))
+				list.Add(m_objects[i]);
+		}
+
+	}
+
+	if (m_children.Length() != 0)
+	{
+		for (int i = 0; i < m_children.Length(); i++)
+		{
+			if (m_children[i])
 			{
-				TreeNode<T>* item = m_objects[i];
-				m_objects[i] = nullptr;
-				return item;
+				if(area.Contains(m_children[i]->m_boundry.center))
+					m_children[i]->Items(list);
+
+				else if(m_children[i]->m_boundry.Overlap(area))
+					m_children[i]->Search(area,list);
+			}
+		}
+	}
+}
+
+template<typename T>
+inline bool QuadTree<T>::HasItems(AABB area)
+{
+	DynamicArray<TreeNode<T>*> list = Search(area);
+
+	if (list.Length() != 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+	
+}
+
+template<typename T>
+inline void QuadTree<T>::Items(DynamicArray<TreeNode<T>*>& list)
+{
+	for (int i = 0; i < m_objects.Length(); i++)
+	{
+		list.Add(m_objects[i]);
+	}
+	for (int i = 0; i < m_children.Length(); i++)
+	{
+		if (m_children[i])
+			m_children[i]->Items(list);
+	}
+}
+
+template<typename T>
+inline bool QuadTree<T>::Remove(TreeNode<T>* object)
+{
+	if (m_objects.getLength() != 0)
+	{
+		for (int i = 0; i < m_objects.Length(); i++)
+		{
+			if (m_objects[i] == object)
+			{
+				m_objects.Remove(m_objects[i]);
+				return true;
 			}
 		}
 	}
 	else
 	{
-		for (int i = 0; i < 4; i++)
+		if (m_children.Length() != 0)
 		{
-			if (m_children[i])
+			for (int i = 0; i < m_children.Length(); i++)
 			{
-				return m_children[i]->Remove(object);
+				if (m_children[i]->Remove(object))
+					return true;
 			}
 		}
 	}
 
-
-
+	return false;
 
 }
 
@@ -233,12 +307,12 @@ inline void QuadTree<T>::Draw()
 		m_boundry.center.x + m_boundry.halfsize.x,
 		m_boundry.center.y - m_boundry.halfsize.y, RED);
 
-	if (m_children != nullptr)
+	if (m_children.Length() != 0)
 	{
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < m_children.Length(); i++)
+		{
 			m_children[i]->Draw();
+		}
 	}
-
-
 }
 

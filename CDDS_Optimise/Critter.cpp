@@ -14,6 +14,18 @@ Critter::~Critter()
 	m_isLoaded = false;
 }
 
+bool Critter::operator==(Critter& other) const
+{
+	return (m_position.x == other.m_position.x && m_position.y == other.m_position.y);
+}
+
+bool Critter::operator!=(Critter& other) const
+{
+	return (m_position.x != other.m_position.x || m_position.y != other.m_position.y);
+}
+
+
+
 void Critter::Init(Vector2 position, Vector2 velocity, float radius, Texture2D texture)
 {
 	m_position = position;
@@ -59,7 +71,7 @@ void Critter::Draw()
 	DrawTexture(m_texture, m_position.x - m_texture.width / 2, m_position.y- m_texture.height /2, WHITE);
 }
 
-AABB& Critter::GetBoundry()
+AABB Critter::GetBoundry()
 {
 	Vector2 box = { m_texture.width / 2, m_texture.height / 2 };
 	m_boundry = { m_position,box };

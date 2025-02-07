@@ -26,6 +26,7 @@
 #include "Critter.h"
 #include "src/TextureManager.h"
 #include "src/QuadTree.h"
+#include "src/ObjectPool.h"
 
 int main(int argc, char* argv[])
 {
@@ -40,8 +41,7 @@ int main(int argc, char* argv[])
     //--------------------------------------------------------------------------------------
 
     srand(time(NULL));
-
-    QuadTree<Critter> critterTree;
+    ObjectPool<Critter> critterpool = ObjectPool<Critter>(1000);
     Critter critters[1000];
 
     // create some critters
@@ -56,11 +56,14 @@ int main(int argc, char* argv[])
         velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
 
         // create a critter in a random location
-        critters[i].Init(
-            { (float)(5 + rand() % (screenWidth - 10)), (float)(5 + (rand() % screenHeight - 10)) },
+        critters[i].Init({ (float)(5 + rand() % (screenWidth - 10)),(float)(5 + (rand() % screenHeight - 10)) },
             velocity,
-            12, TextureManager::instance().GetTexture(1));
-        critterTree.Insert(new TreeNode<Critter>(critters[i], critters[i].GetBoundry()));
+            12, 
+            TextureManager::instance().GetTexture(1));
+
+
+       
+
     }
 
 
@@ -68,7 +71,7 @@ int main(int argc, char* argv[])
     Vector2 velocity = { -100 + (rand() % 200), -100 + (rand() % 200) };
     velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
     destroyer.Init(Vector2{ (float)(screenWidth >> 1), (float)(screenHeight >> 1) }, velocity, 20, TextureManager::instance().GetTexture(2));
-    critterTree.Insert(new TreeNode<Critter>(destroyer, destroyer.GetBoundry()));
+    
     float timer = 1;
     Vector2 nextSpawnPos = destroyer.GetPosition();
 
@@ -81,7 +84,7 @@ int main(int argc, char* argv[])
         //----------------------------------------------------------------------------------
 
         float delta = GetFrameTime();
-        critterTree.Update(delta);
+        
         // update the destroyer
         destroyer.Update(delta);
         destroyer.GetBoundry();
@@ -127,6 +130,7 @@ int main(int argc, char* argv[])
                 critters[i].SetVelocity(Vector2{ critters[i].GetVelocity().x, -critters[i].GetVelocity().y });
             }
 
+           
             // kill any critter touching the destroyer
             // simple circle-to-circle collision check
             float dist = Vector2Distance(critters[i].GetPosition(), destroyer.GetPosition());
@@ -196,7 +200,6 @@ int main(int argc, char* argv[])
 
         ClearBackground(RAYWHITE);
 
-        
         // draw the critters
         for (int i = 0; i < CRITTER_COUNT; i++)
         {

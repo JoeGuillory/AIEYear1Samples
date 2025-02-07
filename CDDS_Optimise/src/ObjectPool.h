@@ -28,8 +28,7 @@ template<typename T>
 inline ObjectPool<T>::ObjectPool(unsigned int size)
 {
 	for (int i = 0; i < size; i++)
-		m_inactive.pushBack(new T());
-
+		m_inactive.pushBack(T());
 
 }
 

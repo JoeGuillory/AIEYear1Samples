@@ -19,6 +19,10 @@ public:
 	Critter();
 	~Critter();
 
+
+	bool operator==(Critter& other) const;
+	bool operator!=(Critter& other) const;
+
 	void Init(Vector2 position, Vector2 velocity, float radius, Texture2D texture);
 	void Reset();
 	void Destroy();
@@ -42,6 +46,6 @@ public:
 	void SetDirty() { m_isDirty = true; }
 
 	bool IsDead() { return m_isLoaded == false; }
-	AABB& GetBoundry();
+	AABB GetBoundry();
 };
 
