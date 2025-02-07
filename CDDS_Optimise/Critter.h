@@ -19,7 +19,7 @@ public:
 	Critter();
 	~Critter();
 
-
+	Critter operator =(Critter& other);
 	bool operator==(Critter& other) const;
 	bool operator!=(Critter& other) const;
 
@@ -47,5 +47,7 @@ public:
 
 	bool IsDead() { return m_isLoaded == false; }
 	AABB GetBoundry();
+protected:
+	Texture2D GetTexture() { return m_texture; }
 };
 

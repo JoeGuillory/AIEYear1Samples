@@ -27,6 +27,7 @@
 #include "src/TextureManager.h"
 #include "src/QuadTree.h"
 #include "src/ObjectPool.h"
+#include <iostream>
 
 int main(int argc, char* argv[])
 {
@@ -42,8 +43,8 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
     ObjectPool<Critter> critterpool = ObjectPool<Critter>(1000);
+    List<Critter> Release;
     Critter critters[1000];
-
     // create some critters
     const int CRITTER_COUNT = 50;
     const int MAX_VELOCITY = 80;
@@ -56,15 +57,17 @@ int main(int argc, char* argv[])
         velocity = Vector2Scale(Vector2Normalize(velocity), MAX_VELOCITY);
 
         // create a critter in a random location
-        critters[i].Init({ (float)(5 + rand() % (screenWidth - 10)),(float)(5 + (rand() % screenHeight - 10)) },
-            velocity,
-            12, 
-            TextureManager::instance().GetTexture(1));
+        critters[i] = *(critterpool.Get());
+        critters[i].Init({(float)(5 + rand() % (screenWidth - 10)),(float)(5 + (rand() % screenHeight - 10))},
+                            velocity,
+                            12,
+                            TextureManager::instance().GetTexture(1));
 
 
-       
+
 
     }
+ 
 
 
     Critter destroyer;
@@ -87,7 +90,6 @@ int main(int argc, char* argv[])
         
         // update the destroyer
         destroyer.Update(delta);
-        destroyer.GetBoundry();
         // check each critter against screen bounds
         if (destroyer.GetX() < 0) {
             destroyer.SetX(0);
@@ -111,7 +113,6 @@ int main(int argc, char* argv[])
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
             critters[i].Update(delta);
-            critters[i].GetBoundry();
             // check each critter against screen bounds
             if (critters[i].GetX() < 0) {
                 critters[i].SetX(0);
@@ -130,18 +131,18 @@ int main(int argc, char* argv[])
                 critters[i].SetVelocity(Vector2{ critters[i].GetVelocity().x, -critters[i].GetVelocity().y });
             }
 
-           
+
             // kill any critter touching the destroyer
             // simple circle-to-circle collision check
             float dist = Vector2Distance(critters[i].GetPosition(), destroyer.GetPosition());
             if (dist < critters[i].GetRadius() + destroyer.GetRadius())
             {
                 critters[i].Destroy();
+                critterpool.Release(&critters[i]);
                 // this would be the perfect time to put the critter into an object pool
             }
         }
 
-        // check for critter-on-critter collisions
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
             for (int j = 0; j < CRITTER_COUNT; j++) {
@@ -170,13 +171,15 @@ int main(int argc, char* argv[])
                 }
             }
         }
+        
+       
 
         timer -= delta;
         if (timer <= 0)
         {
             timer = 1;
 
-            // find any dead critters and spit them out (respawn)
+            
             for (int i = 0; i < CRITTER_COUNT; i++)
             {
                 if (critters[i].IsDead())
@@ -191,7 +194,8 @@ int main(int argc, char* argv[])
                     break;
                 }
             }
-            nextSpawnPos = destroyer.GetPosition();
+           nextSpawnPos = destroyer.GetPosition();
+            
         }
 
         // Draw
@@ -200,11 +204,12 @@ int main(int argc, char* argv[])
 
         ClearBackground(RAYWHITE);
 
-        // draw the critters
+
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
             critters[i].Draw();
         }
+
         // draw the destroyer
         // (if you're wondering why it looks a little odd when sometimes critters are destroyed when they're not quite touching the 
         // destroyer, it's because the origin is at the top-left. ...you could fix that!)
@@ -217,10 +222,7 @@ int main(int argc, char* argv[])
         //----------------------------------------------------------------------------------
     }
 
-    for (int i = 0; i < CRITTER_COUNT; i++)
-    {
-        critters[i].Destroy();
-    }
+    
 
     // De-Initialization
     //--------------------------------------------------------------------------------------   

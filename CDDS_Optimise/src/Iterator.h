@@ -7,6 +7,9 @@ public:
 	Iterator<T>();
 	Iterator<T>(Node<T>* node);
 
+
+	T RemoveThis();
+
 	T operator*() const;
 	//Pre-increment
 	Iterator<T> operator++();
@@ -30,6 +33,13 @@ inline Iterator<T>::Iterator() : m_current(nullptr)
 template<typename T>
 inline Iterator<T>::Iterator(Node<T>* node) : m_current(node)
 {
+}
+
+template<typename T>
+inline T Iterator<T>::RemoveThis()
+{
+	m_current = m_current->next;
+	return m_current->previous->value;
 }
 
 template<typename T>

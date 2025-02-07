@@ -14,6 +14,18 @@ Critter::~Critter()
 	m_isLoaded = false;
 }
 
+Critter Critter::operator=(Critter& other)
+{
+	m_position = other.GetPosition();
+	m_velocity = other.GetVelocity();
+	m_radius = other.GetRadius();
+
+	m_texture = other.GetTexture();
+
+	m_isLoaded = true;
+	return *this;
+}
+
 bool Critter::operator==(Critter& other) const
 {
 	return (m_position.x == other.m_position.x && m_position.y == other.m_position.y);
