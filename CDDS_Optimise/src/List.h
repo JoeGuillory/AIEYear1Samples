@@ -27,7 +27,7 @@ public:
 	Iterator<T> end() const;
 	void destroy();
 	int getLength() const;
-
+	bool Contains(const T& value) const;
 
 
 
@@ -369,4 +369,19 @@ template<typename T>
 inline int List<T>::getLength() const
 {
 	return m_length;
+}
+
+template<typename T>
+inline bool List<T>::Contains(const T& value) const
+{
+	Iterator<T> iter;
+
+	for (iter = begin(); iter != end(); iter++)
+	{
+		if ((*iter) == value)
+			return true;
+	}
+	return false;
+
+
 }

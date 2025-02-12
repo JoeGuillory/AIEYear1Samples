@@ -25,9 +25,10 @@
 #include <time.h>
 #include "Critter.h"
 #include "src/TextureManager.h"
-#include "src/QuadTree.h"
 #include "src/ObjectPool.h"
 #include <iostream>
+#include <string>
+
 
 int main(int argc, char* argv[])
 {
@@ -42,9 +43,9 @@ int main(int argc, char* argv[])
     //--------------------------------------------------------------------------------------
 
     srand(time(NULL));
-    ObjectPool<Critter> critterpool = ObjectPool<Critter>(1000);
+    ObjectPool<Critter> critterpool = ObjectPool<Critter>(100);
 
-    Critter* critters[1000];
+    Critter* critters[100];
     // create some critters
     const int CRITTER_COUNT = 50;
     const int MAX_VELOCITY = 80;
@@ -188,6 +189,7 @@ int main(int argc, char* argv[])
                     Vector2 pos = destroyer.GetPosition();
                     pos = Vector2Add(pos, Vector2Scale(normal, -50));
                     // its pretty ineficient to keep reloading textures. ...if only there was something else we could do
+                    critters[i] = critterpool.Get();
                     critters[i]->Init(pos, Vector2Scale(normal, -MAX_VELOCITY), 12, TextureManager::instance().GetTexture(1));
                     break;
                 }
@@ -202,7 +204,8 @@ int main(int argc, char* argv[])
 
         ClearBackground(RAYWHITE);
 
-
+        DrawText(std::to_string(critterpool.CountActive()).c_str(), 30, 30, 60, BLACK);
+        DrawText(std::to_string(critterpool.CountInactive()).c_str(), 30, 60, 60, BLACK);
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
             critters[i]->Draw();

@@ -1,6 +1,5 @@
 #pragma once
 #include "List.h"
-
 template <typename T>
 class ObjectPool
 {
@@ -14,7 +13,7 @@ public:
 
 	void Clear();
 	T* Get();
-	List<T*> GetActive();
+	List<T> GetActive();
 	void Release(T* value);
 
 
@@ -65,13 +64,14 @@ inline T* ObjectPool<T>::Get()
 		m_inactive.pushBack(new T());
 
 	m_active.pushBack(m_inactive.first());
-	m_inactive.popFront();
-
-	return m_active.last();
+	
+	
+	
+	return m_inactive.popFront();
 }
 
 template<typename T>
-inline List<T*> ObjectPool<T>::GetActive()
+inline List<T> ObjectPool<T>::GetActive()
 {
 	return m_active;
 }
@@ -79,7 +79,9 @@ inline List<T*> ObjectPool<T>::GetActive()
 template<typename T>
 inline void ObjectPool<T>::Release(T* value)
 {
-	m_inactive.pushBack(value);
-	m_active.remove(value);
-
+	if (!m_inactive.Contains(value))
+	{
+		m_inactive.pushBack(value);
+		m_active.remove(value);
+	}
 }
