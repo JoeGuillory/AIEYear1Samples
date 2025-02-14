@@ -204,8 +204,7 @@ int main(int argc, char* argv[])
 
         ClearBackground(RAYWHITE);
 
-        DrawText(std::to_string(critterpool.CountActive()).c_str(), 30, 30, 60, BLACK);
-        DrawText(std::to_string(critterpool.CountInactive()).c_str(), 30, 60, 60, BLACK);
+   
         for (int i = 0; i < CRITTER_COUNT; i++)
         {
             critters[i]->Draw();
