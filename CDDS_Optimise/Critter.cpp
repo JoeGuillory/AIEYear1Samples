@@ -59,7 +59,6 @@ void Critter::Reset()
 
 void Critter::Destroy()
 {
-
 	m_isLoaded = false;
 }
 

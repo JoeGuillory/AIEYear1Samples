@@ -173,6 +173,7 @@
     <ClCompile Include="src\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\DynamicArray.h" />
     <ClInclude Include="src\Iterator.h" />
     <ClInclude Include="src\List.h" />
     <ClInclude Include="src\Node.h" />
